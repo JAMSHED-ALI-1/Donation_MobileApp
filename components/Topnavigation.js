@@ -38,13 +38,13 @@ const Topnavigation = ({index,setIndex}) => {
           <Text
             style={{ ...styles.text, color: darkTheme ? "lightgrey" : "black" }}
           >
-            Discover
+           Compain
           </Text>
         </TouchableOpacity>
       )}
 
       <Text style={{ ...styles.center, color: darkTheme ? "white" : "black" }}>
-        {index ? "All News" : "Discover"}
+        {index ? "All Compain" : "Compain"}
       </Text>
       {index ? (
         <TouchableOpacity
@@ -63,7 +63,7 @@ const Topnavigation = ({index,setIndex}) => {
           <Text
             style={{ ...styles.text, color: darkTheme ? "white" : "black" }}
           >
-            All News
+            All Comp
           </Text>
           <SimpleLineIcons name="arrow-right" size={15} color="#007FFF" />
         </TouchableOpacity>

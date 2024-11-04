@@ -13,7 +13,7 @@ const Tab = createBottomTabNavigator();
 const BottomTabNavigator = () => {
   return (
     <Tab.Navigator
-    initialRouteName="Home" 
+    initialRouteName="Compain" 
       screenOptions={({ route }) => ({
        
         tabBarIcon: ({ focused, color, size }) => {
@@ -21,9 +21,9 @@ const BottomTabNavigator = () => {
 
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Discover') {
+          } else if (route.name === 'Compain') {
             iconName = focused ? 'disc-outline' : 'logo-discord';
-          } else if (route.name === 'UserScreen') {
+          } else if (route.name === 'User') {
             iconName = focused ? 'person' : 'person-outline';
           }
 
@@ -43,9 +43,9 @@ const BottomTabNavigator = () => {
         },
       })}
     >
-      <Tab.Screen name="Discover" component={InshortTabs} />
       <Tab.Screen name="Home" component={Card} />
-      <Tab.Screen name="UserScreen" component={ProfileScreen} />
+      <Tab.Screen name="Compain" component={InshortTabs} />
+      <Tab.Screen name="User" component={ProfileScreen} />
     </Tab.Navigator>
   );
 };

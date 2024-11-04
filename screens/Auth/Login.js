@@ -1,10 +1,69 @@
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View,ActivityIndicator  } from 'react-native';
 import React, { useState } from 'react';
 import LottieView from 'lottie-react-native';
-import CustomCountryPicker from '../../components/CountryPicker';
+import CustomTextInput from '../../components/CustomTextInput';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
+import axios from 'axios';
+import { BASE_URL } from '../utils/Utils';
+import { showMessage } from 'react-native-flash-message';
+import { useNavigation } from '@react-navigation/native';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+const SignupSchema = Yup.object().shape({
+
+  email: Yup.string().email('Invalid email').required('Required'),
+  password: Yup.string()
+    .min(6, 'Password must be at least 6 characters long')
+    .max(20, 'Password cannot be more than 20 characters long')
+    .required('Password is required')
+});
+
+
 
 const Login = () => {
-    const [text,setText]=useState('')
+  const [loading, setLoading] = useState(false);
+  const navigation=useNavigation()
+  const handleSignUp = async (values) => {
+    setLoading(true); // Start loading
+    try {
+      const res = await axios.post(`${BASE_URL}users/login`, {
+        email: values.email,
+        password: values.password,
+      });
+      console.log(res.data)
+      // await AsyncStorage.setItem("user", res.data);
+      if(res.data.success===true){
+        navigation.navigate('BottomTab')
+      }
+  
+      showMessage({
+        message: 'Signup Successful!',
+        description: 'Welcome to the platform!',
+        type: 'success',
+        icon: 'success',
+      });
+    } catch (error) {
+      if (error.response) {
+        console.log('Error response:', error.response.data);
+        showMessage({
+          message: 'Signup Failed',
+          description: error.response.data.msg || 'An error occurred',
+          type: 'danger',
+          icon: 'danger',
+        });
+      } else {
+        console.log('Signup Error:', error.message);
+        showMessage({
+          message: 'Network Error',
+          description: 'Please check your connection and try again',
+          type: 'danger',
+          icon: 'danger',
+        });
+      }
+    } finally {
+      setLoading(false); // Stop loading
+    }
+  };
   return (
     <View style={styles.container}>
       <LottieView
@@ -13,33 +72,63 @@ const Login = () => {
         loop
         style={styles.lottie}
       />
-      <Text style={styles.title}>Donation</Text>
+      <Text style={styles.title}>Imdad</Text>
       <Text style={styles.subtitle}>Welcome back, you've been missed</Text>
+      
+      <Formik
+        initialValues={{email: '', password: '' }}
+        validationSchema={SignupSchema}
+        // onSubmit={handleSignUp()}  
+        onSubmit={values => {
+          handleSignUp(values); // Handle form submission here
+        }}// Pass handleSignUp to Formik
+      >
+        {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+          <View style={{ width: '90%' }}>
+            <CustomTextInput
+              placeholder="Please Enter Email"
+              icon={require('../../assets/email.png')}
+              onChangeText={handleChange('email')}
+              onBlur={handleBlur('email')}
+              value={values.email}
+              touched={touched.email}
+              errors={errors.email} // Display validation error if any
+            />
+            <CustomTextInput
+              placeholder="Please Enter Password"
+              icon={require('../../assets/padlock.png')}
+              secureTextEntry
+              onChangeText={handleChange('password')}
+              onBlur={handleBlur('password')}
+              value={values.password}
+              touched={touched.password}
+              secure={true}
+              errors={errors.password} // Display validation error if any
+            />
 
-      <View style={styles.inputContainer}>
-        <CustomCountryPicker />
-        <TextInput 
-          placeholder='Mobile Number'
-          style={styles.phoneInput}
-          value={text}
-          onChangeText={setText}
-        />
-      </View>
-      <TouchableOpacity style={styles.button}>
-<Text style={{fontSize:18,fontWeight:'600',color:'#fff'}}>Verify</Text>
-      </TouchableOpacity>
-      <Text style={{fontSize:14,fontWeight:'400',color:'black', marginTop: 20,}}>Have a reffrel code ? </Text>
+            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Login</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+      </Formik>
+
+      <Text style={styles.referralText}>If You are Not registred?</Text>
+      <Text style={{...styles.referralText,fontWeight:'600'}} onPress={()=>navigation.navigate('SignUp')}>SignUp</Text>
     </View>
   );
-}
+};
 
 export default Login;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // justifyContent: 'center', // Centers everything vertically
-    alignItems: 'center',     // Centers everything horizontally
+    alignItems: 'center',
     backgroundColor: '#fff',
   },
   lottie: {
@@ -59,28 +148,24 @@ const styles = StyleSheet.create({
     color: 'black',
     marginBottom: 30,
   },
-  inputContainer: {
-    flexDirection: 'row',
+  button: {
+    height: 50,
+    width: '100%',
+    backgroundColor: '#0913ab',
+    borderRadius: 15,
+    marginTop: 30,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  referralText: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: 'black',
     marginTop: 20,
   },
-  phoneInput: {
-    height: 55,
-    width: '60%',
-    borderRadius: 8,
-    borderWidth: 1,
-    padding: 10,
-    marginLeft: 10,
-    borderColor:'#0913ab'
-     
-  },
-  button:{
-    height:50,
-    width:'88%',
-    backgroundColor:'#0913ab',
-    borderRadius:15,
-    marginTop:30,
-    alignItems:'center',
-    justifyContent:'center'
-  }
 });

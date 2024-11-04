@@ -4,6 +4,7 @@ import Context, { Newscontext } from "./API/Context";
 import InshortTabs from "./components/InshortTabs";
 import Login from "./screens/Auth/Login";
 import Stacknavigation from "./screens/navigation/Stacknavigation";
+import FlashMessage from "react-native-flash-message";
 
 function App() {
   const { darkTheme } = useContext(Newscontext);
@@ -17,6 +18,7 @@ function App() {
     >
       {/* <InshortTabs /> */}
       <Stacknavigation/>
+      <FlashMessage position="top" />
       {/* <Login/> */}
     </View>
   );

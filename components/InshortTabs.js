@@ -14,8 +14,9 @@ const InshortTabs = () => {
   ]);
 
   const renderScene = SceneMap({
-    first: Discoverscreen,
-    second: News,
+    first: News,
+    second: Discoverscreen,
+    // second: News,
   });
   return (
     <TabView

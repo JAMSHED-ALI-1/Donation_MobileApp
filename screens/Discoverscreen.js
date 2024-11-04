@@ -1,184 +1,203 @@
-import React, { useContext,useState,useEffect } from "react";
-import {
-  Dimensions,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  FlatList
-} from "react-native";
-// import Carousel from "react-native-reanimated-carousel"; // Unused import
-import { categories, sources } from "../API/api";
-import { Newscontext } from "../API/Context";
-// import Search from "../components/Search";
-const DATA = [
-  {
-    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-    title: 'First Item',
-  },
-  {
-    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-    title: 'Second Item',
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29d72',
-    title: 'Third Item',
-  },
+import { StyleSheet, Text, View, Image, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
+import { Newscontext } from '../API/Context';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import CustomTextInput from '../components/CustomTextInput';
+import { BASE_URL } from './utils/Utils';
+import { useNavigation } from '@react-navigation/native';
+
+const categories = [
+  { name: 'Human', icon: 'person', color: '#F28B82' },
+  { name: 'Study', icon: 'school', color: '#FBBC05' },
+  { name: 'Food', icon: 'restaurant', color: '#34A853' },
+  { name: 'Medicine', icon: 'local-hospital', color: '#4285F4' },
 ];
 
-const DiscoverScreen = () => {
-  const windowWidth = Dimensions.get("window").width; 
-  const [news, setNews] = useState([]);
-  const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
-  const currentNews = news[currentNewsIndex];
-  const [loading, setLoading] = useState(true);
-  const { setCategory, setSource, darkTheme } = useContext(Newscontext);
+const Discoverscreen = () => {
+  const { darkTheme } = useContext(Newscontext);
+  const [campaignData, setCampaignData] = useState([]);
+  const navigation=useNavigation()
+
   useEffect(() => {
-    const fetchNews = async () => {
-      setLoading(true);
+    const fetchCampaigns = async () => {
       try {
-        const response = await fetch('https://saurav.tech/NewsAPI/top-headlines/category/health/in.json');
+        const response = await fetch(`${BASE_URL}campaigns/all`);
         const data = await response.json();
-        // console.log(data);
-        setNews(data.articles || []);
-       
+        setCampaignData(data.data || []);
       } catch (error) {
-        console.error('Error fetching news:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching campaigns:', error);
       }
     };
-
-    fetchNews();
+    fetchCampaigns();
   }, []);
-  const renderItem = ({ item }) => {
-    return (
-      <View style={{...styles.box,backgroundColor:darkTheme ? 'white':'black',shadowColor:darkTheme ? 'black':'white'}}>
-        <Image source={require('../assets/Image.png')} style={styles.newsImage} />
-       <View>
 
-      
-        <Text style={[styles.itemTitle,{fontSize:14,fontWeight:'500',color: darkTheme ? "black" : "white"}]}>{item.title}</Text>
-        <Text style={{...styles.itemTitle,color: darkTheme ? "black" : "white"}}>{item.description}</Text>
+  return (
+    <View style={{ ...styles.container, backgroundColor: darkTheme ? 'black' : 'white' }}>
+      {/* Header */}
+      <View style={styles.headerContainer}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View style={{ ...styles.userCircle, backgroundColor: darkTheme ? 'white' : 'white', alignItems: "center", justifyContent: 'center' }}>
+            <Icon name='person' size={30} color="pink" />
+          </View>
+          <Text style={{ ...styles.text, color: darkTheme ? 'white' : 'black' }}>Welcome</Text>
+        </View>
+        <View style={{ ...styles.notificationCircle, backgroundColor: darkTheme ? 'white' : 'white' }}>
+          <Image source={require('../assets/notification.png')} style={{ height: 20, width: 20 }} tintColor={darkTheme ? 'black' : 'black'} />
         </View>
       </View>
-    );
-  };
-  
-  return (
-    <View style={[styles.discover,{backgroundColor: darkTheme ? "white" : "black"}]}>
-      {/* <Search /> */}
-      <Text
-        style={{ ...styles.subtitle, color: darkTheme ? "black" : "white" }}
-      >
-        Categories
-      </Text>
 
-      <View style={styles.sources}>
-        {sources.map((s) => (
-          <TouchableOpacity
-            onPress={() => setSource(s.id)}
-            key={s.id}
-            style={styles.sourceContainer}
-          >
-            <Image source={{ uri: s.pic }} style={styles.sourceImage} />
+      {/* Search Bar */}
+      <CustomTextInput placeholder={'Search'} bgcolor={'white'} />
+
+      {/* Hero Image */}
+      <View style={styles.hero}>
+        <Image source={require('../assets/Donation.jpg')} style={{ height: '100%', width: '100%', borderRadius: 10 }} />
+      </View>
+
+      {/* Categories Section */}
+        <Text style={{fontSize:18,fontWeight:'600',color:darkTheme?"white":'black',paddingVertical:10}}>Category</Text>
+      <View style={styles.hero2}>
+        {categories.map((category, index) => (
+          <TouchableOpacity key={index} style={[styles.categoryContainer, { backgroundColor: category.color }]}>
+            <Icon name={category.icon} size={24} color="white" />
+            <Text style={styles.categoryText}>{category.name}</Text>
           </TouchableOpacity>
         ))}
       </View>
-
-      <Text
-        style={{ ...styles.subtitle, color: darkTheme ? "black" : "white"}}
-      >
-        Resent
-      </Text>
-      <FlatList
-        data={news}
-        renderItem={renderItem}
-        // keyExtractor={item => item.id}
-        
-      />
-
-
+      <Text style={{fontSize:18,fontWeight:'600',color:darkTheme?"white":'black',paddingVertical:10}}>Compain</Text>
+      {/* Donation Campaigns */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.donationScroll}>
+        {campaignData.map((campaign, index) => (
+          <TouchableOpacity key={index} style={{ ...styles.donationCard, backgroundColor: darkTheme ? 'white' : 'white' }}
+          onPress={() => navigation.navigate('Priviewcompain', { content: campaign })}>
+            <Image source={{ uri: campaign.image_url }} style={styles.donationImage} />
+            <View style={styles.cardContent}>
+              <Text style={styles.donationTitle}>{campaign.title}</Text>
+              <Text style={styles.donationRaised}>
+                ${campaign.donationReceived.toFixed(2)} raised of ${campaign.donationGoal.toFixed(2)}
+              </Text>
+              <View style={styles.progressBar}>
+                <View
+                  style={{
+                    ...styles.progress,
+                    width: `${(campaign.donationReceived / campaign.donationGoal) * 100}%`,
+                  }}
+                />
+              </View>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </View>
   );
 };
 
-export default DiscoverScreen;
+export default Discoverscreen;
 
 const styles = StyleSheet.create({
-  discover: {
-    padding: 10,
-    // alignItems: "center",
+  container: {
+    flex: 1,
+    padding: 15,
   },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    paddingBottom: 8,
-    marginHorizontal: 5,
-    borderBottomColor: "#007FFF",
-    borderBottomWidth: 5,
-    alignSelf: "flex-start",
-    borderRadius: 10,
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 15,
   },
-  category: {
-    height: 130,
-    margin: 10,
-    alignItems: "center",
-    justifyContent: "space-evenly",
+  notificationCircle: {
+    width: 35,
+    height: 35,
+    borderRadius: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.32,
+    shadowRadius: 5.46,
+    elevation: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  categoryImage: {
-    height: "60%",
-    width: "100%",
-    resizeMode: "contain",
+  text: {
+    fontSize: 18,
+    fontWeight: '800',
   },
-  name: {
-    fontSize: 14,
-    textTransform: "capitalize",
+  userCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.32,
+    shadowRadius: 5.46,
+    elevation: 9,
   },
-  sources: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-around",
-    paddingVertical: 15,
-  },
-  sourceContainer: {
-    height: 150,
-    width: "40%",
-    borderRadius: 10,
-    margin: 15,
-    backgroundColor: "#cc313d",
-  },
-  sourceImage: {
-    height: "100%",
-    borderRadius: 10,
-    resizeMode: "cover",
-  },
-  box: {
-    height: 100,
+  hero: {
+    height: '25%',
     width: '100%',
-    backgroundColor: '#fff',
-    marginTop:15,
-    borderRadius:10,
-    flexDirection:'row',
-    shadowColor: "#000",
-shadowOffset: {
-	width: 0,
-	height: 2,
-},
-shadowOpacity: 0.23,
-shadowRadius: 2.62,
-
-elevation: 4,
-  },
-  newsImage: {
-    height: '100%',
-    width: '30%',
+    backgroundColor: 'red',
     borderRadius: 10,
-  },itemTitle:{
-// fontWeight:'300',
-fontSize:12,
-left:10,
-
-  }
+    marginTop: 10,
+  },
+  hero2: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  
+  },
+  categoryContainer: {
+    width: '20%',
+    height: 80,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryText: {
+    color: 'white',
+    marginTop: 5,
+    fontWeight: '600',
+  },
+  donationScroll: {
+    flexDirection: 'row',
+    // marginTop: 15,
+  },
+  donationCard: {
+    height: "80%",
+    backgroundColor: 'white',
+    borderRadius: 10,
+    width: 200,
+    marginRight: 15,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  donationImage: {
+    width: '100%',
+    height: 100,
+  },
+  cardContent: {
+    padding: 10,
+  },
+  donationTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 5,
+  },
+  donationRaised: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 5,
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progress: {
+    height: '100%',
+    backgroundColor: '#4CAF50',
+  },
 });

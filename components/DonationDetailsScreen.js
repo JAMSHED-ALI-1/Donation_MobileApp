@@ -5,99 +5,101 @@ import GestureRecognizer from 'react-native-swipe-gestures';
 import { useNavigation } from '@react-navigation/native';
 
 const DonationDetailsScreen = () => {
-  const [news, setNews] = useState([]);
-  const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
+  const [campaigns, setCampaigns] = useState([]);
+  const [currentCampaignIndex, setCurrentCampaignIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
 
   useEffect(() => {
-    const fetchNews = async () => {
+    const fetchCampaigns = async () => {
       setLoading(true);
       try {
-        const response = await fetch('https://saurav.tech/NewsAPI/top-headlines/category/health/in.json');
+        const response = await fetch('https://donation-backend-app.vercel.app/api/campaigns/all');
         const data = await response.json();
-        setNews(data.articles || []);
-        setCurrentNewsIndex(0); // Reset index
+        setCampaigns(data.data || []);
+        setCurrentCampaignIndex(0); // Reset index
       } catch (error) {
-        console.error('Error fetching news:', error);
+        console.error('Error fetching campaigns:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchNews();
+    fetchCampaigns();
   }, []);
 
   const handleSwipeUp = () => {
-    if (currentNewsIndex < news.length - 1) {
-      setCurrentNewsIndex(currentNewsIndex + 1);
+    if (currentCampaignIndex < campaigns.length - 1) {
+      setCurrentCampaignIndex(currentCampaignIndex + 1);
     }
   };
 
   const handleSwipeDown = () => {
-    if (currentNewsIndex > 0) {
-      setCurrentNewsIndex(currentNewsIndex - 1);
+    if (currentCampaignIndex > 0) {
+      setCurrentCampaignIndex(currentCampaignIndex - 1);
     }
   };
 
-  const currentNews = news[currentNewsIndex];
+  const currentCampaign = campaigns[currentCampaignIndex];
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#FFD700" />;
+    return <ActivityIndicator size="large" color="#FFD700" style={styles.loadingIndicator} />;
   }
 
   return (
     <SafeAreaView style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-
-       
-      <GestureRecognizer
-        onSwipeUp={handleSwipeUp}
-        onSwipeDown={handleSwipeDown}
-        style={styles.gestureContainer}
-      >
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color="black" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Details</Text>
-          <TouchableOpacity>
-            <Ionicons name="heart-outline" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
-
-        <Image
-          source={{ uri: currentNews?.urlToImage }}
-          style={styles.image}
-        />
-
-        <Text style={styles.title}>{currentNews?.title || 'Loading...'}</Text>
-
-        <View style={styles.tagContainer}>
-          <View style={styles.tag}>
-            <Ionicons name="location-outline" size={16} color="gray" />
-            <Text style={styles.tagText}>{currentNews?.source.name || 'Loading...'}</Text>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <GestureRecognizer
+          onSwipeUp={handleSwipeUp}
+          onSwipeDown={handleSwipeDown}
+          style={styles.gestureContainer}
+        >
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Ionicons name="arrow-back" size={24} color="black" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Campaign Details</Text>
+            <TouchableOpacity>
+              <Ionicons name="heart-outline" size={24} color="black" />
+            </TouchableOpacity>
           </View>
-          <View style={styles.tag}>
-            <Ionicons name="eye-outline" size={16} color="gray" />
-            <Text style={styles.tagText}>{currentNews?.publishedAt ? new Date(currentNews.publishedAt).toLocaleDateString() : 'Loading...'}</Text>
+
+          <Image
+            source={{ uri: currentCampaign?.image_url }}
+            style={styles.image}
+          />
+
+          <Text style={styles.title}>{currentCampaign?.title || 'Loading title...'}</Text>
+
+          <View style={styles.tagContainer}>
+            <View style={styles.tag}>
+              <Ionicons name="person-outline" size={16} color="gray" />
+              <Text style={styles.tagText}>{currentCampaign?.author || 'Author not available'}</Text>
+            </View>
+            <View style={styles.tag}>
+              <Ionicons name="calendar-outline" size={16} color="gray" />
+              <Text style={styles.tagText}>{currentCampaign?.fundRaisingEndDate ? new Date(currentCampaign.fundRaisingEndDate).toLocaleDateString() : 'End date not available'}</Text>
+            </View>
           </View>
-        </View>
 
-        <View style={styles.progressBar}>
-          <View style={[styles.progress, { width: `${(currentNewsIndex + 1) / news.length * 100}%` }]} />
-        </View>
+          <View style={styles.progressBar}>
+            <View style={[styles.progress, { width: `${(currentCampaign.donationReceived / currentCampaign.donationGoal) * 100}%` }]} />
+          </View>
 
-        <View>
-          <Text style={{ ...styles.description, fontSize: 14 }}>{currentNews?.description || 'Loading...'}</Text>
-          <Text style={{ ...styles.description, fontSize: 14 }}>{currentNews?.description || 'Loading...'}</Text>
-          <Text style={{ ...styles.description, fontSize: 14 }}>{currentNews?.description || 'Loading...'}</Text>
-        </View>
+          <View>
+            <Text style={styles.description}>{currentCampaign?.content || 'Description not available'}</Text>
+            <Text style={styles.donationDetails}>
+              Donation Goal: {currentCampaign?.donationGoal}
+            </Text>
+            <Text style={styles.donationDetails}>
+              Donation Received: {currentCampaign?.donationReceived}
+            </Text>
+          </View>
 
-        <TouchableOpacity style={styles.donateButton}>
-          <Text style={styles.donateButtonText}>Donate Now</Text>
-        </TouchableOpacity>
-      </GestureRecognizer>
+          <TouchableOpacity style={styles.donateButton}>
+            <Text style={styles.donateButtonText}>Donate Now</Text>
+          </TouchableOpacity>
+        </GestureRecognizer>
       </ScrollView>
     </SafeAreaView>
   );
@@ -109,6 +111,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF8E1',
     padding: 20,
   },
+  loadingIndicator: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    color: '#FFD700',
+  },
   gestureContainer: {
     flex: 1,
   },
@@ -117,16 +125,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
+
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color:'white'
   },
   image: {
     width: '100%',
     height: 200,
     borderRadius: 10,
     marginBottom: 15,
+  
   },
   title: {
     fontSize: 22,
@@ -163,6 +174,11 @@ const styles = StyleSheet.create({
   description: {
     marginBottom: 20,
     color: 'gray',
+  },
+  donationDetails: {
+    color: 'gray',
+    fontSize: 16,
+    marginBottom: 5,
   },
   donateButton: {
     backgroundColor: '#FFD700',
